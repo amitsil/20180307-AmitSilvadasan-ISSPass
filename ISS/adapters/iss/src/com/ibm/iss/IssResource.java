@@ -19,6 +19,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.wink.json4j.JSONArray;
@@ -47,6 +48,10 @@ public class IssResource {
 	 * This method returns response with ISS Pass Times. Path for method:
 	 * "<server address>/ISS/adapters/iss/iss-pass"
 	 * 
+	 * returns:
+	 * 	200 OK – when successful
+	 *  400 Bad Request – if one or more inputs is out of range or invalid
+	 * 
 	 * @param lat
 	 * @param lon
 	 * @param alt
@@ -57,7 +62,7 @@ public class IssResource {
 	@Path("/iss-pass")
 	@Consumes("application/json")
 	@Produces("application/json")
-	public JSONObject getIssPasses(@QueryParam("lat") Double lat,
+	public Response getIssPasses(@QueryParam("lat") Double lat,
 			@QueryParam("log") Double lon,
 			@DefaultValue("100") @QueryParam("alt") Long alt,
 			@DefaultValue("5") @QueryParam("n") Integer n) {
@@ -70,21 +75,21 @@ public class IssResource {
 			if (lat == null) {
 				apiResponse.put("message", "failure");
 				apiResponse.put("reason", "Latitude must be specified");
-				return apiResponse;
+				return Response.status(400).entity(apiResponse).build();
 			} else if (lon == null) {
 				apiResponse.put("message", "failure");
 				apiResponse.put("reason", "Longitude must be specified");
-				return apiResponse;
+				return Response.status(400).entity(apiResponse).build();
 			} else if (lat > 90.0 || lat < -90.0) {
 				apiResponse.put("message", "failure");
 				apiResponse.put("reason",
 						"Latitude must be number between -90.0 and 90.0");
-				return apiResponse;
+				return Response.status(400).entity(apiResponse).build();
 			} else if (lon > 180.0 || lon < -180.0) {
 				apiResponse.put("message", "failure");
 				apiResponse.put("reason",
 						"Longitude must be number between -180.0 and 180.0");
-				return apiResponse;
+				return Response.status(400).entity(apiResponse).build();
 			}
 		
 			// Get the current location of ISS.
@@ -139,7 +144,7 @@ public class IssResource {
 			e.printStackTrace();
 		}
 
-		return apiResponse;
+		return Response.status(200).entity(apiResponse).build();
 	}
 
 	/**
